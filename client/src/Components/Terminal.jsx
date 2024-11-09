@@ -1,6 +1,8 @@
 import {Terminal as XTerminal} from '@xterm/xterm'
 import { useEffect, useRef } from 'react'
+import socket from '../socket'
 import '@xterm/xterm/css/xterm.css'
+
  const Terminal =()=> {
     const TerminalRef = useRef()
     const flag=useRef(false);
@@ -13,9 +15,19 @@ import '@xterm/xterm/css/xterm.css'
             rows :20,
         });
      Term.open(TerminalRef.current)
-     Term.onData(data => {
-        console.log(data)
+     Term.onData((data) => {
+        if (socket.connected) {
+            socket.emit("terminal:write", data);
+          } else {
+            console.log("Socket is not connected.");
+          }
+        
      });
+
+     socket.on("terminal:data",(data)=>
+    {
+        Term.write(data);
+    });
 
 },[])
     return (
